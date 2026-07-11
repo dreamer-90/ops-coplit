@@ -9,7 +9,47 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
+from typing import Optional, List
+
 from pydantic import BaseModel, Field
+
+class GraphNode(BaseModel):
+    """Represents a topological location in the stadium exterior/interior graph."""
+    node_id: str
+    node_type: str = Field(description="Transit | Security | Plaza | Gate | Concourse | Stand")
+    connected_to: List[str] = Field(default_factory=list)
+    capacity: int
+    current_occupancy: int = 0
+
+class EmergencyState(BaseModel):
+    """Server-authoritative state object governing the emergency control plane."""
+    current_level: int = Field(0, description="0: Nominal, 1: Freeze AI, 2: Lock Sector, 3: Full Emergency, 4: Evacuate")
+    current_commander: Optional[str] = None
+    active_incident: Optional[str] = None
+    activated_at: Optional[str] = None
+    recovery_eta: Optional[str] = None
+    affected_zones: List[str] = Field(default_factory=list)
+
+class AuditLogRecord(BaseModel):
+    """Immutable ledger entry for operational actions."""
+    event_id: str
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    operator_id: str
+    action: str
+    previous_state: int
+    new_state: int
+    reason: str
+
+class ScramRequest(BaseModel):
+    """Payload for initiating a SCRAM."""
+    level: int = Field(..., ge=1, le=4)
+    operator_id: str = Field(..., description="ID of the operator initiating SCRAM")
+
+class DispatchRequest(BaseModel):
+    """Payload for manual dispatch, evaluated against minimum reserve limits."""
+    zone: str
+    roles: List[str]
+    remaining_reserve: int = Field(..., description="The calculated reserve left after this dispatch")
 
 
 class CrowdEvent(BaseModel):
@@ -57,6 +97,16 @@ class EngineDecision(BaseModel):
     )
     affected_zones: list[str] = Field(
         ..., description="List of zone IDs affected by this decision"
+    )
+    confidence_score: float = Field(
+        ..., ge=0, le=100, description="Confidence in this decision percentage (0-100)"
+    )
+    decision_provenance: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description="Tracks used data sources and missing feeds. e.g. {'based_on': ['CCTV'], 'missing': ['Transit']}"
+    )
+    alternatives: Optional[list[str]] = Field(
+        None, description="Alternative actions that were considered but rejected"
     )
     recommended_action: str = Field(
         ..., description="Concise action recommendation for ops staff"
