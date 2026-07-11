@@ -309,7 +309,7 @@ async def serve_frontend() -> HTMLResponse:
 
 # Mount static assets (CSS, JS) — placed AFTER explicit routes
 app.mount(
-    "/static",
+    "/",
     StaticFiles(directory=str(FRONTEND_DIR)),
     name="static",
 )
