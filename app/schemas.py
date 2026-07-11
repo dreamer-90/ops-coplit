@@ -82,6 +82,7 @@ class StaffAllocation(BaseModel):
     from_zone: str = Field(..., description="Zone to pull staff from")
     to_zone: str = Field(..., description="Zone to deploy staff to")
     count: int = Field(..., ge=1, description="Number of staff to move")
+    eta_minutes: int = Field(..., ge=0, description="Estimated transit time in minutes")
 
 
 class EngineDecision(BaseModel):
@@ -114,6 +115,16 @@ class EngineDecision(BaseModel):
     reasoning: str = Field(
         ...,
         description="1-2 sentence explanation of WHY this action was chosen",
+    )
+    mission_objective: str = Field(
+        ..., description="The primary operational objective this decision supports (e.g. 'Preserve life', 'Prevent crowd reversal')"
+    )
+    expected_outcome: str = Field(
+        ..., description="The predicted state after execution (e.g. 'Density drops below 6/m²')"
+    )
+    predicted_effects: dict[str, str] = Field(
+        default_factory=dict,
+        description="Digital Twin simulation forecasting side effects on other areas (e.g. {'South Ramp': '+28%', 'Transit Delay': '+5 min'})",
     )
     staff_allocation: list[StaffAllocation] = Field(
         default_factory=list,

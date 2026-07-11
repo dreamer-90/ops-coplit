@@ -43,14 +43,15 @@ FIFA World Cup 2026. You receive real-time crowd events and must produce \
 a single, actionable decision for the venue operations team.
 
 ## Your Responsibilities
-1. Assess the risk level of the incoming event.
-2. Determine which zones are affected.
-3. Recommend a specific, actionable response (not vague advice).
-4. Explain your reasoning in 1-2 sentences — the ops team needs to \
-   understand WHY, not just WHAT.
-5. If staff need to be moved, specify exact movements (role, from, to, count).
-6. Generate an English alert suitable for PA broadcast.
-7. Translate that alert into: {languages}.
+1. Assess the true risk level of the incoming event based on momentum and crowd physics.
+2. Determine which zones are affected, anticipating downstream cascades.
+3. Recommend a specific, actionable, and multi-stage response (e.g. Restricted Entry -> Reroute -> Lock).
+4. Act as a Predictive Digital Twin: Forecast the `predicted_effects` of your decision on other zones and metrics.
+5. Define the `mission_objective` (e.g. "Prevent crowd crush") and the `expected_outcome` (e.g. "Density drops to 6/m²").
+6. Explain your reasoning in 1-2 sentences.
+7. If staff need to be moved, specify exact movements AND estimate the `eta_minutes` based on travel distance and crowd density. (e.g. 15+ mins if moving through dense crowds).
+8. Generate an English alert suitable for PA broadcast.
+9. Translate that alert into: {languages}.
 
 ## Critical Rules
 - NEVER double-allocate staff. Check the "Current Staff State" and \
@@ -108,6 +109,12 @@ DECISION_SCHEMA = types.Schema(
         ),
         "recommended_action": types.Schema(type=types.Type.STRING),
         "reasoning": types.Schema(type=types.Type.STRING),
+        "mission_objective": types.Schema(type=types.Type.STRING),
+        "expected_outcome": types.Schema(type=types.Type.STRING),
+        "predicted_effects": types.Schema(
+            type=types.Type.OBJECT,
+            additional_properties=types.Schema(type=types.Type.STRING),
+        ),
         "confidence_score": types.Schema(type=types.Type.NUMBER),
         "decision_provenance": types.Schema(
             type=types.Type.OBJECT,
@@ -124,12 +131,13 @@ DECISION_SCHEMA = types.Schema(
             type=types.Type.ARRAY,
             items=types.Schema(
                 type=types.Type.OBJECT,
-                required=["role", "from_zone", "to_zone", "count"],
+                required=["role", "from_zone", "to_zone", "count", "eta_minutes"],
                 properties={
                     "role": types.Schema(type=types.Type.STRING),
                     "from_zone": types.Schema(type=types.Type.STRING),
                     "to_zone": types.Schema(type=types.Type.STRING),
                     "count": types.Schema(type=types.Type.INTEGER),
+                    "eta_minutes": types.Schema(type=types.Type.INTEGER),
                 },
             ),
         ),
@@ -170,8 +178,9 @@ def _build_user_prompt(
         ai_governance = f"""
 ## AI GOVERNANCE OVERRIDE: ACTIVE EMERGENCY (LEVEL {emergency_state.current_level})
 The stadium is currently under SCRAM. You are strictly in PASSIVE MONITORING MODE.
-ALLOWED: anomaly detection, summarization, status updates, timeline generation, confidence reporting.
+ALLOWED: anomaly detection, summarization, status updates, timeline generation, confidence reporting, PREDICTING EFFECTS.
 NOT ALLOWED: Do NOT dispatch staff. Do NOT open/close gates. Do NOT issue broadcasts. Do NOT recommend evacuations.
+HOWEVER: You MUST STILL REPORT THE TRUE RISK LEVEL (e.g. Critical) and surface alerts if secondary bottlenecks form!
 """
 
     exterior_graph = """
@@ -247,6 +256,7 @@ async def process_event(
                     from_zone=sa.get("from_zone", "D"),
                     to_zone=sa.get("to_zone", event.zone_id),
                     count=sa.get("count", 1),
+                    eta_minutes=sa.get("eta_minutes", 10),
                 )
             )
 
@@ -259,6 +269,9 @@ async def process_event(
                 "recommended_action", "Monitor situation"
             ),
             reasoning=data.get("reasoning", "Automated assessment."),
+            mission_objective=data.get("mission_objective", "Maintain nominal operations"),
+            expected_outcome=data.get("expected_outcome", "Situation stabilized"),
+            predicted_effects=data.get("predicted_effects", {}),
             confidence_score=data.get("confidence_score", 85.0),
             decision_provenance=data.get("decision_provenance", {"based_on": ["sensors"], "missing": []}),
             alternatives=data.get("alternatives", []),
@@ -299,15 +312,19 @@ _SEVERITY_TO_PRIORITY = {
 
 def _fallback_decision(event: CrowdEvent, emergency_state: EmergencyState = None) -> EngineDecision:
     """Safe default if LLM fails or no API key is provided."""
+    risk = _SEVERITY_TO_RISK.get(event.severity, "moderate")
     
     if emergency_state and emergency_state.current_level > 0:
         return EngineDecision(
             event_id=event.event_id,
             timestamp=datetime.now(timezone.utc).isoformat(),
-            risk_level="low",
+            risk_level=risk,
             affected_zones=[event.zone_id],
             recommended_action="PASSIVE_MONITORING_ONLY",
             reasoning=f"System is currently under SCRAM (Level {emergency_state.current_level}). AI interventions disabled.",
+            mission_objective="Protect emergency access routes",
+            expected_outcome="Alerts surfaced to human operators",
+            predicted_effects={"Global": "Delay in AI responsiveness"},
             confidence_score=100.0,
             decision_provenance={"based_on": ["emergency_state"], "missing": []},
             alternatives=[],
@@ -351,6 +368,9 @@ def _fallback_decision(event: CrowdEvent, emergency_state: EmergencyState = None
             f"Fallback decision — LLM unavailable. Based on crowd pressure model: "
             f"Risk Demand/Capacity modified by ({event.severity}) and density ({event.density_percent}%)."
         ),
+        mission_objective="Stabilize crowd pressure",
+        expected_outcome="Fallback static response applied",
+        predicted_effects={"Unknown": "Simulation unavailable"},
         confidence_score=50.0,
         decision_provenance={"based_on": ["Turnstile count", "Flow rate"], "missing": ["AI Context"]},
         alternatives=["Do nothing", "Dispatch secondary team"],
