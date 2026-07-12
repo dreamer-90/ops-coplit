@@ -21,7 +21,7 @@ export function setupQuickActions() {
         
         btn.classList.add('ring-2', 'ring-primary/50');
         setTimeout(() => btn.classList.remove('ring-2', 'ring-primary/50'), 1500);
-        showToast('Action executed via API', 'success');
+        showToast(`${action.replace('-', ' ').toUpperCase()} INITIATED`, 'success');
       } catch (err) {
         showToast('Action failed', 'error');
         console.error(err);

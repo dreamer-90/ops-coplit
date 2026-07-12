@@ -27,8 +27,8 @@ async def execute_action(
         affected_zones=[req.zone_id] if req.zone_id else ["All"],
         confidence_score=100.0, # 100% confidence because it's human-directed
         decision_provenance={"based_on": ["Manual Operator Override"], "missing": []},
-        recommended_action=f"MANUAL OVERRIDE: {req.action_type.replace('_', ' ')}",
-        reasoning=f"Operator {req.operator_id} initiated immediate manual action.",
+        recommended_action=req.action_type.replace('-', ' ').upper(),
+        reasoning=f"Manual Override [Operator ID: {req.operator_id}] • Immediate manual action initiated.",
         mission_objective="Immediate manual intervention",
         expected_outcome="Pending physical confirmation",
         predicted_effects={},
@@ -40,7 +40,7 @@ async def execute_action(
     
     # Store and broadcast to all connected clients
     await store.add_decision(decision)
-    await store.publish("broadcast_channel", json.dumps({"type": "decision", "payload": decision.model_dump()}))
+    await store.publish("broadcast_channel", json.dumps({"type": "decision", "decision": decision.model_dump()}))
     
     return {"status": "executed", "decision": decision}
 
@@ -61,7 +61,7 @@ async def execute_broadcast(
         confidence_score=100.0,
         decision_provenance={"based_on": ["Manual Broadcast Override"], "missing": []},
         recommended_action=f"BROADCAST: {req.message[:30]}...",
-        reasoning=f"Operator {req.operator_id} initiated PA broadcast.",
+        reasoning=f"Manual Override [Operator ID: {req.operator_id}] • Operator initiated PA broadcast.",
         mission_objective="Crowd Information",
         expected_outcome="Crowd informed",
         predicted_effects={},
@@ -72,6 +72,6 @@ async def execute_broadcast(
     )
     
     await store.add_decision(decision)
-    await store.publish("broadcast_channel", json.dumps({"type": "decision", "payload": decision.model_dump()}))
+    await store.publish("broadcast_channel", json.dumps({"type": "decision", "decision": decision.model_dump()}))
     
     return {"status": "broadcasted", "decision": decision}
