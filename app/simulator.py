@@ -33,6 +33,9 @@ def _events() -> list[CrowdEvent]:
                 "Current density at 75% and rising."
             ),
             severity="high",
+            predicted_density_percent=88.0,
+            time_to_critical_minutes=12,
+            queue_growth_rate="+45 fans/min",
         ),
         # ------------------------------------------------------------------
         # Event 2 — EARLY MATCH (stable)
@@ -69,7 +72,10 @@ def _events() -> list[CrowdEvent]:
                 "areas and restrooms. Risk of bottleneck at corridor C-3. "
                 "Adjacent Zone B also seeing increased flow."
             ),
-            severity="high",
+            severity="medium",
+            predicted_density_percent=82.0,
+            time_to_critical_minutes=18,
+            queue_growth_rate="+20 fans/min",
         ),
         # ------------------------------------------------------------------
         # Event 4 — THE CONFLICT  *** KEY DEMO MOMENT ***
@@ -94,6 +100,9 @@ def _events() -> list[CrowdEvent]:
                 "must decide how to allocate the limited 2 volunteer teams."
             ),
             severity="critical",
+            predicted_density_percent=98.0,
+            time_to_critical_minutes=4,
+            queue_growth_rate="+85 fans/min",
         ),
         # ------------------------------------------------------------------
         # Event 5 — MEDICAL INCIDENT
@@ -115,6 +124,9 @@ def _events() -> list[CrowdEvent]:
                 "Multilingual PA announcement needed urgently."
             ),
             severity="critical",
+            predicted_density_percent=94.0,
+            time_to_critical_minutes=7,
+            queue_growth_rate="+60 fans/min",
         ),
         # ------------------------------------------------------------------
         # Event 6 — MATCH END EGRESS
@@ -137,6 +149,9 @@ def _events() -> list[CrowdEvent]:
                 "vehicles/hr."
             ),
             severity="high",
+            predicted_density_percent=89.0,
+            time_to_critical_minutes=9,
+            queue_growth_rate="+55 fans/min",
         ),
     ]
 

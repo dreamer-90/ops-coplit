@@ -44,6 +44,7 @@ class ScramRequest(BaseModel):
     """Payload for initiating a SCRAM."""
     level: int = Field(..., ge=1, le=4)
     operator_id: str = Field(..., description="ID of the operator initiating SCRAM")
+    override_code: Optional[str] = Field(None, description="Manager override code required for Level 3+")
 
 class DispatchRequest(BaseModel):
     """Payload for manual dispatch, evaluated against minimum reserve limits."""
@@ -73,6 +74,10 @@ class CrowdEvent(BaseModel):
     severity: str = Field(
         ..., description="Severity level: low | medium | high | critical"
     )
+    predicted_density_percent: Optional[float] = Field(None, description="Forecasted peak density")
+    time_to_critical_minutes: Optional[int] = Field(None, description="Minutes until critical density is reached")
+    queue_growth_rate: Optional[str] = Field(None, description="Rate of queue growth (e.g., '+42/min')")
+
 
 
 class StaffAllocation(BaseModel):
@@ -125,6 +130,9 @@ class EngineDecision(BaseModel):
     predicted_effects: dict[str, str] = Field(
         default_factory=dict,
         description="Digital Twin simulation forecasting side effects on other areas (e.g. {'South Ramp': '+28%', 'Transit Delay': '+5 min'})",
+    )
+    predicted_queue_reduction: Optional[str] = Field(
+        None, description="Expected reduction in bottleneck/queue (e.g. '18%')"
     )
     staff_allocation: list[StaffAllocation] = Field(
         default_factory=list,
@@ -208,9 +216,20 @@ class DecisionHistory:
                 state[a.from_zone][a.role] = (
                     state[a.from_zone].get(a.role, 0) - a.count
                 )
-                # Increment destination
+                # Increment target
                 state.setdefault(a.to_zone, {})
-                state[a.to_zone][a.role] = (
-                    state[a.to_zone].get(a.role, 0) + a.count
-                )
+                state[a.to_zone][a.role] = state[a.to_zone].get(a.role, 0) + a.count
         return state
+
+
+class ActionRequest(BaseModel):
+    """Payload for manual quick actions (e.g. Open Gates)."""
+    action_type: str = Field(..., description="Action identifier")
+    zone_id: Optional[str] = None
+    operator_id: str
+
+class BroadcastRequest(BaseModel):
+    """Payload for manual PA broadcasts."""
+    message: str
+    zones: list[str]
+    operator_id: str

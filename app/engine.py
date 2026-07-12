@@ -13,6 +13,7 @@ Key design decisions:
 
 from __future__ import annotations
 
+import os
 import json
 import logging
 from datetime import datetime, timezone
@@ -31,6 +32,14 @@ from app.schemas import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Initialize GenAI Client using settings if provided, otherwise default to env var
+api_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY")
+client = None
+if api_key:
+    client = genai.Client(api_key=api_key)
+else:
+    logger.warning("No GEMINI_API_KEY set. The engine will fallback to static simulated decisions.")
 
 
 # ---------------------------------------------------------------------------
@@ -64,6 +73,8 @@ a single, actionable decision for the venue operations team.
   explaining your reasoning.
 - ALWAYS provide a "confidence_score" (0-100) reflecting how certain you are.
 - ALWAYS provide a list of "alternatives" (1-2 other options considered but rejected).
+- ALWAYS provide "predicted_effects" detailing the cascading impact on other areas (e.g. 'South Ramp': '+28% density').
+- ALWAYS provide a "predicted_queue_reduction" quantifying how much this action relieves the bottleneck (e.g. '18% reduction').
 - ALWAYS provide "decision_provenance" containing a list of data sources used (e.g. CCTV, Crowd sensors) and a list of missing sources (e.g. Weather feed).
 - If no action is needed (stable, low-risk), say so explicitly — do \
   NOT invent unnecessary actions.
@@ -115,6 +126,7 @@ DECISION_SCHEMA = types.Schema(
             type=types.Type.OBJECT,
             additional_properties=types.Schema(type=types.Type.STRING),
         ),
+        "predicted_queue_reduction": types.Schema(type=types.Type.STRING),
         "confidence_score": types.Schema(type=types.Type.NUMBER),
         "decision_provenance": types.Schema(
             type=types.Type.OBJECT,

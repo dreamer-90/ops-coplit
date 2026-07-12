@@ -144,11 +144,8 @@
 </header>
 <!-- MAIN DASHBOARD GRID -->
 <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 min-h-0 relative">
-<!-- Ambient Background Glows -->
-<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
-<div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-status-danger/5 rounded-full blur-[120px] pointer-events-none"></div>
-<!-- PANEL 1: ZONE STATUS (Left, 25% width) -->
-<section class="col-span-1 lg:col-span-3 glass-panel flex flex-col h-full overflow-hidden relative z-10 min-h-[600px] lg:min-h-0">
+  <!-- PANEL 1: ZONE STATUS (Left, 25% width) -->
+  <section class="col-span-1 lg:col-span-3 glass-panel flex flex-col h-full overflow-hidden relative z-10 min-h-[600px] lg:min-h-0">
 <div class="p-6 border-b border-tactical-border bg-white/[0.02]">
 <div class="flex justify-between items-start mb-4">
 <h2 class="text-2xl font-bold text-white tracking-wide" id="active-zone-title">ZONE C</h2>
@@ -257,17 +254,19 @@
 </div>
 <!-- Stadium Wireframe SVG -->
 <div class="w-full h-full p-20 relative flex items-center justify-center">
-<svg class="w-full h-full drop-shadow-2xl z-10" fill="none" stroke="rgba(255,255,255,0.1)" viewbox="0 0 800 600">
+<svg class="w-full h-full drop-shadow-2xl z-10" fill="none" stroke="rgba(255,255,255,0.1)" viewbox="0 0 800 600" aria-labelledby="stadiumMapTitle stadiumMapDesc">
+<title id="stadiumMapTitle">Stadium Operations Map</title>
+<desc id="stadiumMapDesc">Interactive wireframe map of the stadium divided into four zones (A, B, C, D) showing current density and operational status.</desc>
 <ellipse cx="400" cy="300" rx="350" ry="250" stroke-dasharray="8 8" stroke-width="2"></ellipse>
 <ellipse cx="400" cy="300" rx="330" ry="230" stroke-width="1"></ellipse>
 <rect fill="rgba(255,255,255,0.02)" height="200" rx="20" stroke="rgba(255,255,255,0.2)" stroke-width="2" width="300" x="250" y="200"></rect>
 <line stroke="rgba(255,255,255,0.1)" x1="400" x2="400" y1="200" y2="400"></line>
 <circle cx="400" cy="300" r="40" stroke="rgba(255,255,255,0.1)"></circle>
 <!-- Zones -->
-<path id="map-zone-A" class="zone-arc hover:fill-status-success/20 transition-all cursor-pointer" d="M 250 160 Q 400 50 550 160 L 650 100 Q 400 -50 150 100 Z" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="2"></path>
-<path id="map-zone-B" class="zone-arc hover:fill-status-success/20 transition-all cursor-pointer" d="M 590 200 Q 700 300 590 400 L 680 470 Q 820 300 680 130 Z" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="2"></path>
-<path id="map-zone-C" class="zone-arc active-division hover:fill-status-warning/30 transition-all cursor-pointer drop-shadow-[0_0_15px_rgba(245,158,11,0.4)]" d="M 250 440 Q 400 550 550 440 L 650 500 Q 400 650 150 500 Z" fill="rgba(245, 158, 11, 0.2)" stroke="#F59E0B" stroke-width="3"></path>
-<path id="map-zone-D" class="zone-arc hover:fill-status-success/20 transition-all cursor-pointer" d="M 210 200 Q 100 300 210 400 L 120 470 Q -20 300 120 130 Z" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="2"></path>
+<path id="map-zone-A" class="zone-arc focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 hover:fill-status-success/20 transition-all cursor-pointer" d="M 250 160 Q 400 50 550 160 L 650 100 Q 400 -50 150 100 Z" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="2" role="button" tabindex="0" aria-label="Select North Stand Zone A"></path>
+<path id="map-zone-B" class="zone-arc focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 hover:fill-status-success/20 transition-all cursor-pointer" d="M 590 200 Q 700 300 590 400 L 680 470 Q 820 300 680 130 Z" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="2" role="button" tabindex="0" aria-label="Select East Stand Zone B"></path>
+<path id="map-zone-C" class="zone-arc active-division focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 hover:fill-status-warning/30 transition-all cursor-pointer drop-shadow-[0_0_15px_rgba(245,158,11,0.4)]" d="M 250 440 Q 400 550 550 440 L 650 500 Q 400 650 150 500 Z" fill="rgba(245, 158, 11, 0.2)" stroke="#F59E0B" stroke-width="3" role="button" tabindex="0" aria-label="Select South Stand Zone C"></path>
+<path id="map-zone-D" class="zone-arc focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/50 hover:fill-status-success/20 transition-all cursor-pointer" d="M 210 200 Q 100 300 210 400 L 120 470 Q -20 300 120 130 Z" fill="rgba(16, 185, 129, 0.1)" stroke="#10B981" stroke-width="2" role="button" tabindex="0" aria-label="Select West Stand Zone D"></path>
 <!-- Zone Labels -->
 <text x="400" y="55" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="22" font-weight="bold" font-family="Space Grotesk, sans-serif" style="pointer-events:none">A</text>
 <text x="400" y="70" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="10" font-family="Inter, sans-serif" style="pointer-events:none">NORTH STAND</text>
@@ -313,31 +312,9 @@
 <button class="feed-filter-btn flex-1 py-2 text-xs font-bold text-muted hover:text-white transition-colors rounded" data-filter="audit" aria-pressed="false">AUDIT LOG</button>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto p-5 space-y-3" id="action-feed">
+<div class="flex-1 overflow-y-auto p-5 space-y-3" id="action-feed" aria-live="polite" aria-atomic="false" aria-relevant="additions">
 <div id="feed-empty" style="display:none;" class="text-center text-muted p-4">No recent actions</div>
-<!-- Feed Items -->
-<div class="glass-panel p-4 rounded-panel bg-white/5 border border-white/10 border-l-4 border-l-status-danger hover:bg-white/10 transition-all group cursor-pointer">
-<div class="flex justify-between items-center mb-1">
-<span class="text-status-danger text-xs font-bold font-mono">14:32:05</span>
-<span class="material-symbols-outlined text-muted text-sm opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
-</div>
-<p class="text-sm text-white font-bold uppercase tracking-wider">UNIT 7 DISPATCHED TO GATE C</p>
-<p class="text-xs text-muted mt-1 font-medium">Manual Override • Operator: JD-04</p>
-</div>
-<div class="glass-panel p-4 rounded-panel bg-white/5 border border-white/10 border-l-4 border-l-status-warning hover:bg-white/10 transition-all group cursor-pointer">
-<div class="flex justify-between items-center mb-1">
-<span class="text-status-warning text-xs font-bold font-mono">14:28:12</span>
-</div>
-<p class="text-sm text-white font-bold uppercase tracking-wider">Zone C Density Alert (85%)</p>
-<p class="text-xs text-muted mt-1 font-medium">Auto-detected • Sector C-Lower</p>
-</div>
-<div class="glass-panel p-4 rounded-panel bg-white/5 border border-white/10 border-l-4 border-l-primary hover:bg-white/10 transition-all group cursor-pointer">
-<div class="flex justify-between items-center mb-1">
-<span class="text-primary text-xs font-bold font-mono">14:15:00</span>
-</div>
-<p class="text-sm text-white font-bold uppercase tracking-wider">Routine Sweep Initiated</p>
-<p class="text-xs text-muted mt-1 font-medium">Automated System Check • Zone A</p>
-</div>
+
 </div>
 </div>
 <!-- PANEL 4: MULTILINGUAL ALERTS (Right Bottom, 50% height) -->
@@ -381,7 +358,7 @@
 <div id="broadcast-slider-text" class="absolute inset-0 flex items-center justify-center text-status-danger font-bold tracking-widest text-sm pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity uppercase">
               DRAG TO BROADCAST <span class="material-symbols-outlined text-lg ml-2 animate-pulse">double_arrow</span>
 </div>
-<input class="drag-slider relative z-10" id="broadcastSlider" max="100" min="0" type="range" value="0"/>
+<input class="drag-slider relative z-10" id="broadcastSlider" max="100" min="0" type="range" value="0" aria-label="Drag to Broadcast stadium alert"/>
 <!-- Abort Overlay -->
 <div id="broadcast-abort-overlay" class="absolute inset-0 bg-status-danger z-20 flex items-center justify-between px-6 opacity-0 pointer-events-none transition-opacity">
   <div class="flex items-center gap-3">
@@ -418,7 +395,7 @@
   <div id="sr-announcements" aria-live="assertive" style="position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;"></div>
 
   <!-- Dispatch Modal Wrapper -->
-  <div id="dispatch-modal" class="modal-overlay" aria-hidden="true" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
+  <div id="dispatch-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
     <div class="glass-panel p-8 w-[650px] max-w-[90vw] relative bg-[#060A14] border border-tactical-border shadow-2xl">
       <button id="btn-close-modal" class="absolute top-6 right-6 text-muted hover:text-white transition-colors"><span class="material-symbols-outlined">close</span></button>
       <h2 id="modal-title" class="text-2xl font-bold text-white tracking-wide mb-1">Dispatch</h2>
@@ -481,12 +458,12 @@
   </style>
 
 <!-- SCRAM MODAL -->
-<div class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="scram-modal">
+<div class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="scram-modal" role="dialog" aria-modal="true" aria-labelledby="scram-modal-title" aria-hidden="true">
   <div class="glass-panel w-full max-w-lg p-6 bg-red-950/20 border-status-danger/30 shadow-neon-danger flex flex-col gap-6">
     <div class="flex items-start gap-4">
       <span class="material-symbols-outlined text-status-danger text-5xl">e911_emergency</span>
       <div>
-        <h2 class="text-2xl font-bold text-status-danger uppercase tracking-wider mb-2">Initialize SCRAM Override</h2>
+        <h2 id="scram-modal-title" class="text-2xl font-bold text-status-danger uppercase tracking-wider mb-2">Initialize SCRAM Override</h2>
         <p class="text-red-200/70 text-sm">This action suspends AI autonomy and enforces hard overrides on physical stadium infrastructure. Select level and confirm.</p>
       </div>
     </div>
@@ -527,5 +504,5 @@
   </div>
 </div>
 
-<script src="./app.js"></script>
+<script type="module" src="./js/app.js?v=2"></script>
 </body></html>
