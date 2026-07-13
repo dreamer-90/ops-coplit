@@ -22,7 +22,7 @@ class StateStore(Protocol):
 
 
 class InMemoryStateStore:
-    def __init__(self):
+    def __init__(self) -> None:
         self._decisions: List[EngineDecision] = []
         self._audit_logs: List[AuditLogRecord] = []
         self._emergency_state = EmergencyState()
@@ -77,7 +77,7 @@ class InMemoryStateStore:
 
 
 class RedisStateStore:
-    def __init__(self, redis_url: str):
+    def __init__(self, redis_url: str) -> None:
         self.redis = redis.from_url(redis_url, decode_responses=True)
         self._pubsub = None
 

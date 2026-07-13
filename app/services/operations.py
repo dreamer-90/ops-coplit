@@ -5,13 +5,8 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 
 from app.engine import process_event as engine_process_event
-from app.schemas import (
-    AuditLogRecord,
-    DispatchRequest,
-    EmergencyState,
-    EngineDecision,
-    ScramRequest,
-)
+from app.schemas import (AuditLogRecord, DispatchRequest, EmergencyState,
+                         EngineDecision, ScramRequest)
 from app.services.dependencies import get_store
 from app.simulator import get_event
 
@@ -47,7 +42,7 @@ async def trigger_event_business_logic(index: int) -> dict:
 
     # We need a mock object that mimics decision_history for the engine
     class MockDecisionHistory:
-        def __init__(self, ds):
+        def __init__(self, ds) -> None:
             self.decisions = ds
 
     decision = await engine_process_event(

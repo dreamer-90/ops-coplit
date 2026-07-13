@@ -23,13 +23,8 @@ from google.genai import types
 
 from app.config import settings
 from app.context import LANGUAGE_POOL, get_full_context
-from app.schemas import (
-    CrowdEvent,
-    DecisionHistory,
-    EmergencyState,
-    EngineDecision,
-    StaffAllocation,
-)
+from app.schemas import (CrowdEvent, DecisionHistory, EmergencyState,
+                         EngineDecision, StaffAllocation)
 
 logger = logging.getLogger(__name__)
 

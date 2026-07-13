@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import pytest
-
 from app.schemas import CrowdEvent
-from app.simulator import get_all_events, get_event, get_event_count, get_event_summaries
+from app.simulator import (get_all_events, get_event, get_event_count,
+                           get_event_summaries)
 
 
 class TestSimulatorEvents:

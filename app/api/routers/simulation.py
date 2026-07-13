@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import verify_token
-from app.services.operations import reset_simulation_logic, trigger_event_business_logic
+from app.services.operations import (reset_simulation_logic,
+                                     trigger_event_business_logic)
 from app.simulator import get_event_count, get_event_summaries
 
 router = APIRouter(prefix="/api/events", tags=["simulation"])

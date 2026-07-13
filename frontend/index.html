@@ -21,7 +21,7 @@
           "status-success": "#10B981",
           "status-warning": "#F59E0B",
           "status-danger": "#EF4444",
-          "muted": "#94A3B8",
+          "muted": "#CBD5E1",
         },
         fontFamily: {
           "heading": ["Space Grotesk", "sans-serif"], // Placeholder for Cabinet Grotesk
@@ -118,6 +118,7 @@
 </style>
 </head>
 <body class="flex flex-col antialiased selection:bg-primary/30 min-h-screen overflow-x-hidden">
+<a href="#main-content" class="absolute -top-40 left-0 bg-primary text-background-dark px-4 py-2 z-[9999] focus:top-0 focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300 font-bold">Skip to main content</a>
 <!-- TOP HEADER -->
 <header class="h-16 shrink-0 flex items-center justify-between px-8 border-b border-tactical-border glass-panel z-50 rounded-none border-t-0 border-x-0">
 <div class="flex items-center gap-4">
@@ -125,25 +126,25 @@
 <h1 class="text-2xl font-bold tracking-tight text-gradient uppercase">Ops Copilot</h1>
 </div>
 <div class="flex items-center gap-6">
-<button class="bg-status-danger text-white px-4 py-2 rounded-lg font-bold shadow-neon-danger hover:bg-red-600 transition-colors uppercase tracking-widest text-sm flex items-center gap-2" onclick="openScramModal()" id="btn-scram-trigger">
+<button class="bg-status-danger text-white px-4 py-2 rounded-lg font-bold shadow-neon-danger hover:bg-red-600 transition-colors uppercase tracking-widest text-sm flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-background-dark" onclick="openScramModal()" id="btn-scram-trigger">
   <span class="material-symbols-outlined">warning</span>
   SYSTEM SCRAM
 </button>
-<div class="flex items-center gap-2 px-3 py-1.5 glass-panel rounded-full text-xs font-bold text-muted" id="personnel-summary">
+<div class="flex items-center gap-2 px-3 py-1.5 glass-panel rounded-full text-xs font-bold text-muted" id="personnel-summary" aria-live="polite" aria-atomic="true">
 <span class="material-symbols-outlined text-status-success text-sm">group</span>
 <span id="avail-count">9</span> AVAIL
 <span class="text-white/20 mx-1">|</span>
 <span id="deployed-count">7</span> DEPLOYED
 </div>
-<div class="text-sm font-medium text-muted" id="clock-display">14:32:05 UTC</div>
-<div class="flex items-center gap-2 bg-status-danger/10 px-4 py-1.5 rounded-full border border-status-danger/20" id="ws-status">
+<div class="text-sm font-medium text-muted" id="clock-display" aria-live="polite">14:32:05 UTC</div>
+<div class="flex items-center gap-2 bg-status-danger/10 px-4 py-1.5 rounded-full border border-status-danger/20" id="ws-status" aria-live="polite">
 <div class="w-2 h-2 rounded-full bg-status-danger animate-pulse shadow-neon-danger"></div>
 <span class="text-status-danger text-sm font-bold tracking-wider">LIVE</span>
 </div>
 </div>
 </header>
 <!-- MAIN DASHBOARD GRID -->
-<main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 min-h-0 relative">
+<main id="main-content" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 min-h-0 relative">
   <!-- PANEL 1: ZONE STATUS (Left, 25% width) -->
   <section class="col-span-1 lg:col-span-3 glass-panel flex flex-col h-full overflow-hidden relative z-10 min-h-[600px] lg:min-h-0">
 <div class="p-6 border-b border-tactical-border bg-white/[0.02]">
@@ -163,7 +164,7 @@
 </div>
 <div class="flex justify-between text-xs text-muted uppercase tracking-widest font-bold">
 <span>Real-time Density</span>
-<span class="text-status-warning" id="active-density-pct">94%</span>
+<span class="text-status-warning" id="active-density-pct" aria-live="polite">94%</span>
 </div>
 </div>
 <div class="p-6 flex-1 flex flex-col gap-8 overflow-y-auto">
@@ -190,9 +191,9 @@
 <div class="flex flex-col gap-4">
 <p class="text-white text-sm font-bold tracking-widest uppercase flex justify-between">
 <span>Active Incidents</span>
-<span class="bg-white/10 px-2 py-0.5 rounded text-xs" id="active-incidents-count">2</span>
+<span class="bg-white/10 px-2 py-0.5 rounded text-xs" id="active-incidents-count" aria-live="polite">2</span>
 </p>
-<div id="active-incidents-list" class="flex flex-col gap-4">
+<div id="active-incidents-list" class="flex flex-col gap-4" aria-live="polite">
 </div>
 </div>
 </div>

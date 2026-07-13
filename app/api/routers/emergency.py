@@ -2,11 +2,9 @@ from fastapi import APIRouter, Depends
 
 from app.api.dependencies import verify_token
 from app.schemas import DispatchRequest, ScramRequest
-from app.services.operations import (
-    activate_scram_business_logic,
-    execute_dispatch_business_logic,
-    recover_scram_business_logic,
-)
+from app.services.operations import (activate_scram_business_logic,
+                                     execute_dispatch_business_logic,
+                                     recover_scram_business_logic)
 
 router = APIRouter(prefix="/api/emergency", tags=["emergency"])
 

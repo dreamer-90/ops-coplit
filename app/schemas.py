@@ -58,7 +58,7 @@ class ScramRequest(BaseModel):
     level: int = Field(..., ge=1, le=4)
     operator_id: str = Field(..., description="ID of the operator initiating SCRAM")
     override_code: Optional[str] = Field(
-        None, description="Manager override code required for Level 3+"
+        default=None, description="Manager override code required for Level 3+"
     )
 
 
@@ -94,13 +94,13 @@ class CrowdEvent(BaseModel):
         ..., description="Severity level: low | medium | high | critical"
     )
     predicted_density_percent: Optional[float] = Field(
-        None, description="Forecasted peak density"
+        default=None, description="Forecasted peak density"
     )
     time_to_critical_minutes: Optional[int] = Field(
-        None, description="Minutes until critical density is reached"
+        default=None, description="Minutes until critical density is reached"
     )
     queue_growth_rate: Optional[str] = Field(
-        None, description="Rate of queue growth (e.g., '+42/min')"
+        default=None, description="Rate of queue growth (e.g., '+42/min')"
     )
 
 
@@ -158,7 +158,7 @@ class EngineDecision(BaseModel):
         description="Digital Twin simulation forecasting side effects on other areas (e.g. {'South Ramp': '+28%', 'Transit Delay': '+5 min'})",
     )
     predicted_queue_reduction: Optional[str] = Field(
-        None, description="Expected reduction in bottleneck/queue (e.g. '18%')"
+        default=None, description="Expected reduction in bottleneck/queue (e.g. '18%')"
     )
     staff_allocation: list[StaffAllocation] = Field(
         default_factory=list,
@@ -172,7 +172,7 @@ class EngineDecision(BaseModel):
         description="Translated alerts keyed by language code (es, fr, ar, pt)",
     )
     conflict_resolution: Optional[str] = Field(
-        None,
+        default=None,
         description="Explanation of trade-offs if competing demands existed",
     )
     priority: int = Field(
@@ -191,6 +191,7 @@ class DecisionHistory:
     def __init__(self, max_history: int = 10) -> None:
         self._decisions: list[EngineDecision] = []
         self._max_history = max_history
+        self._staff_state: dict[str, dict[str, int]] = {}
 
     @property
     def decisions(self) -> list[EngineDecision]:
@@ -203,9 +204,20 @@ class DecisionHistory:
         if len(self._decisions) > self._max_history:
             self._decisions = self._decisions[-self._max_history :]
 
+        for a in decision.staff_allocation:
+            self._staff_state.setdefault(a.from_zone, {})
+            self._staff_state[a.from_zone][a.role] = (
+                self._staff_state[a.from_zone].get(a.role, 0) - a.count
+            )
+            self._staff_state.setdefault(a.to_zone, {})
+            self._staff_state[a.to_zone][a.role] = (
+                self._staff_state[a.to_zone].get(a.role, 0) + a.count
+            )
+
     def clear(self) -> None:
         """Reset all decision history (for demo restart)."""
         self._decisions.clear()
+        self._staff_state.clear()
 
     def get_recent(self, n: int = 5) -> str:
         """Format the last *n* decisions as context for the LLM prompt."""
@@ -233,17 +245,9 @@ class DecisionHistory:
 
         Returns a dict like ``{"A": {"volunteer": 4, "security": 1}, ...}``.
         """
-        # Start with the default roster from context (will be merged externally)
-        state: dict[str, dict[str, int]] = {}
-        for d in self._decisions:
-            for a in d.staff_allocation:
-                # Decrement source
-                state.setdefault(a.from_zone, {})
-                state[a.from_zone][a.role] = state[a.from_zone].get(a.role, 0) - a.count
-                # Increment target
-                state.setdefault(a.to_zone, {})
-                state[a.to_zone][a.role] = state[a.to_zone].get(a.role, 0) + a.count
-        return state
+        import copy
+
+        return copy.deepcopy(self._staff_state)
 
 
 class ActionRequest(BaseModel):
