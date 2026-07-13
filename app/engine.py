@@ -14,8 +14,6 @@ Key design decisions:
 from __future__ import annotations
 
 import json
-import logging
-import os
 from datetime import datetime, timezone
 
 from google import genai
@@ -26,10 +24,10 @@ from app.context import LANGUAGE_POOL, get_full_context
 from app.schemas import (CrowdEvent, DecisionHistory, EmergencyState,
                          EngineDecision, StaffAllocation)
 
-logger = logging.getLogger(__name__)
+from app.logger import logger
 
 # Initialize GenAI Client using settings if provided, otherwise default to env var
-api_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY")
+api_key = settings.GEMINI_API_KEY.get_secret_value() if settings.GEMINI_API_KEY else None
 client = None
 if api_key:
     client = genai.Client(api_key=api_key)
@@ -234,12 +232,12 @@ async def process_event(
     Makes one Gemini API call with structured JSON output.
     Falls back to a safe default if the call fails.
     """
-    if not settings.gemini_api_key:
+    if not settings.GEMINI_API_KEY:
         logger.warning("No GEMINI_API_KEY set — using fallback decision")
         return _fallback_decision(event, emergency_state)
 
     try:
-        client = genai.Client(api_key=settings.gemini_api_key)
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
         user_prompt = _build_user_prompt(event, history, emergency_state)
 

@@ -46,7 +46,7 @@ def test_scram_requires_auth(client):
 def test_scram_with_valid_auth(client):
     response = client.post(
         "/api/emergency/scram",
-        headers={"x-api-key": settings.api_secret_key},
+        headers={"x-api-key": settings.API_SECRET_KEY.get_secret_value() if settings.API_SECRET_KEY else "OPS-COPILOT-2026"},
         json={"level": 1, "operator_id": "test_ops", "reason": "Test scram"},
     )
     assert response.status_code == 200
@@ -63,7 +63,7 @@ def test_get_decision_history(client):
 def test_trigger_event(client):
     # Valid auth
     response = client.post(
-        "/api/events/0/trigger", headers={"x-api-key": settings.api_secret_key}
+        "/api/events/0/trigger", headers={"x-api-key": settings.API_SECRET_KEY.get_secret_value() if settings.API_SECRET_KEY else "OPS-COPILOT-2026"}
     )
     assert response.status_code == 200
     data = response.json()

@@ -37,7 +37,8 @@ def test_scram_and_recover(client, override_store):
     store = override_store
 
     # Needs valid SCRAM override code for level 3
-    os.environ["SCRAM_OVERRIDE_CODE"] = "TEST-CODE"
+    from app.config import settings
+    settings.SCRAM_OVERRIDE_CODE = "TEST-CODE"
 
     # Trigger SCRAM Level 3
     response = client.post(

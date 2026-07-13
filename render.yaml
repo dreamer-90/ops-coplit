@@ -1,11 +1,11 @@
 services:
   - type: web
     name: stadium-ops-copilot
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    env: docker
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.10.0
       - key: SCRAM_OVERRIDE_CODE
         value: ALPHA-77
+      - key: API_SECRET_KEY
+        value: OPS-COPILOT-2026
+      - key: GEMINI_API_KEY
+        generateValue: true

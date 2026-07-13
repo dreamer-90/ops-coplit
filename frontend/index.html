@@ -4,44 +4,13 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Command Center Dashboard - Ops Copilot</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" defer></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Typography: Cabinet Grotesk for headings, Satoshi for body (Using system fallbacks or Google alternatives as placeholders for specific PRD fonts) -->
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        colors: {
-          "primary": "#06B6D4",
-          "background-dark": "#060A14",
-          "tactical-surface": "rgba(255, 255, 255, 0.03)",
-          "tactical-border": "rgba(148, 163, 184, 0.08)",
-          "status-success": "#10B981",
-          "status-warning": "#F59E0B",
-          "status-danger": "#EF4444",
-          "muted": "#CBD5E1",
-        },
-        fontFamily: {
-          "heading": ["Space Grotesk", "sans-serif"], // Placeholder for Cabinet Grotesk
-          "body": ["Inter", "sans-serif"], // Placeholder for Satoshi
-        },
-        borderRadius: {
-          "DEFAULT": "0.5rem",
-          "panel": "16px",
-          "lg": "1rem",
-          "xl": "1.5rem",
-          "full": "9999px"
-        },
-        boxShadow: {
-          'neon-primary': '0 0 12px var(--tw-colors-primary)',
-          'neon-danger': '0 0 12px var(--tw-colors-status-danger)',
-        }
-      },
-    },
-  }
-</script>
+<!-- Google Fonts & Material Symbols -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link href="./src/index.css" rel="stylesheet" />
+<script type="module" src="./js/app.js"></script>
 <style>
   body {
     font-family: 'Inter', sans-serif;
@@ -505,5 +474,5 @@
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=2"></script>
+
 </body></html>

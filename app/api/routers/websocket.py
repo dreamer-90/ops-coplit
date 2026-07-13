@@ -1,11 +1,10 @@
 import asyncio
-import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.services.dependencies import get_store
 
-logger = logging.getLogger(__name__)
+from app.logger import logger
 
 router = APIRouter()
 

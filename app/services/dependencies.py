@@ -1,17 +1,16 @@
-import logging
-import os
+from app.config import settings
 
 from app.services.store import InMemoryStateStore, RedisStateStore, StateStore
 
-logger = logging.getLogger(__name__)
+from app.logger import logger
 
 _store_instance: StateStore = None
 
 
 async def init_store() -> None:
     global _store_instance
-    redis_url = os.getenv("REDIS_URL")
-    env = os.getenv("ENV", "development").lower()
+    redis_url = settings.REDIS_URL
+    env = settings.ENV.lower()
 
     if redis_url:
         logger.info(f"Connecting to Redis at {redis_url}...")

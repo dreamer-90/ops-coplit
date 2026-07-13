@@ -1,5 +1,4 @@
 import json
-import logging
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
@@ -10,7 +9,7 @@ from app.schemas import (AuditLogRecord, DispatchRequest, EmergencyState,
 from app.services.dependencies import get_store
 from app.simulator import get_event
 
-logger = logging.getLogger(__name__)
+from app.logger import logger
 
 
 async def broadcast_decision(decision: EngineDecision) -> None:
@@ -58,12 +57,12 @@ async def trigger_event_business_logic(index: int) -> dict:
     }
 
 
-import os
+from app.config import settings
 
 
 async def activate_scram_business_logic(req: ScramRequest) -> dict:
     if req.level >= 3:
-        expected_code = os.getenv("SCRAM_OVERRIDE_CODE", "DEFAULT-CODE")
+        expected_code = settings.SCRAM_OVERRIDE_CODE
         if req.override_code != expected_code:
             raise HTTPException(
                 status_code=403,

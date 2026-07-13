@@ -78,59 +78,80 @@ export async function triggerSimulationEvent(eventType, zoneId) {
   return await resp.json();
 }
 
-export function connectWebSocket() {
-  if (isOffline) return;
-
-  if (ws && ws.readyState !== WebSocket.CLOSED) {
-    ws.close();
+class ResilientWebSocket {
+  constructor(url) {
+    this.url = url;
+    this.attempts = 0;
+    this.maxDelay = 30000;
+    this.ws = null;
+    this.reconnectTimer = null;
   }
 
-  try {
-    ws = new WebSocket(WS_URL);
+  connect() {
+    if (isOffline) return;
+    console.log(`Establishing live feed pipeline link...`);
     
-    ws.onopen = () => {
-      clearTimeout(wsReconnectTimer);
-      store.dispatch({ type: 'WS_STATUS', payload: 'LIVE' });
-    };
+    if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
+      this.ws.close();
+    }
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'decision' && data.decision) {
-          store.dispatch({ type: 'ADD_DECISION', payload: data.decision });
-          // If the server passes density along with the decision:
-          if (data.event && data.event.density_percent) {
-            store.dispatch({ 
-              type: 'UPDATE_DENSITY', 
-              payload: { 
-                zoneId: data.event.zone_id, 
-                densityPercent: data.event.density_percent 
-              } 
-            });
+    try {
+      this.ws = new WebSocket(this.url);
+      
+      this.ws.onopen = () => {
+        console.log("Telemetry channel online.");
+        this.attempts = 0; // Reset backoff
+        clearTimeout(this.reconnectTimer);
+        store.dispatch({ type: 'WS_STATUS', payload: 'LIVE' });
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'decision' && data.decision) {
+            store.dispatch({ type: 'ADD_DECISION', payload: data.decision });
+            if (data.event && data.event.density_percent) {
+              store.dispatch({ 
+                type: 'UPDATE_DENSITY', 
+                payload: { 
+                  zoneId: data.event.zone_id, 
+                  densityPercent: data.event.density_percent 
+                } 
+              });
+            }
+            if (data.decision.staff_allocation) {
+              store.dispatch({ type: 'ALLOCATE_STAFF', payload: data.decision.staff_allocation });
+            }
           }
-          if (data.decision.staff_allocation) {
-            store.dispatch({ type: 'ALLOCATE_STAFF', payload: data.decision.staff_allocation });
-          }
+        } catch(err) {
+          console.error("Error parsing WS message:", err);
         }
-      } catch(err) {
-        console.error("Error parsing WS message:", err);
-      }
-    };
+      };
 
-    ws.onclose = () => {
-      store.dispatch({ type: 'WS_STATUS', payload: 'OFFLINE' });
-      wsReconnectTimer = setTimeout(connectWebSocket, 5000);
-    };
+      this.ws.onclose = () => {
+        store.dispatch({ type: 'WS_STATUS', payload: 'OFFLINE' });
+        this.attempts++;
+        const delay = Math.min(Math.pow(2, this.attempts) * 1000, this.maxDelay);
+        console.warn(`Telemetry signal lost. Reconnecting in ${delay / 1000}s...`);
+        this.reconnectTimer = setTimeout(() => this.connect(), delay);
+      };
 
-    ws.onerror = (err) => {
-      console.error("WebSocket encountered error: ", err.message);
-      ws.close();
-    };
-  } catch (err) {
-    console.error("Failed to connect WS", err);
-    isOffline = true;
-    showToast('Backend offline — UI in static mode', 'error');
+      this.ws.onerror = (err) => {
+        console.error("WebSocket encountered error: ", err);
+        this.ws.close();
+      };
+    } catch (err) {
+      console.error("Failed to connect WS", err);
+      isOffline = true;
+      showToast('Backend offline — UI in static mode', 'error');
+    }
   }
+}
+
+export const liveFeed = new ResilientWebSocket(WS_URL);
+
+export function connectWebSocket() {
+  liveFeed.connect();
 }
 
 export async function executeQuickAction(actionType, zoneId) {

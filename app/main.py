@@ -7,7 +7,6 @@ to allow horizontal scaling via Redis and Pub/Sub.
 from __future__ import annotations
 
 import asyncio
-import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
@@ -21,11 +20,7 @@ from app.api.routers import data, emergency, operations, simulation, websocket
 from app.services.dependencies import init_store
 from app.simulator import get_event_count
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-)
+from app.logger import logger
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
@@ -71,16 +66,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-import os
+from app.config import settings
 
 from fastapi import Request
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        "ALLOWED_ORIGINS",
-        "http://localhost,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000",
-    ).split(","),
+    allow_origins=settings.ALLOWED_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -119,6 +111,8 @@ app.include_router(operations.router)
 # Static file serving (frontend)
 # ---------------------------------------------------------------------------
 
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def serve_frontend() -> HTMLResponse:

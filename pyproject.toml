@@ -5,6 +5,7 @@ description = "AI-powered operations assistant for FIFA World Cup 2026 venue sta
 requires-python = ">=3.11"
 
 [tool.pytest.ini_options]
+addopts = "--cov=app --cov-report=term-missing --cov-fail-under=95"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 filterwarnings = [

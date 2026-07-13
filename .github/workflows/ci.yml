@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        
+    - name: Execute Resiliency Unit Tests
+      env:
+        ENV: test
+        API_SECRET_KEY: "OPS-COPILOT-2026"
+        SCRAM_OVERRIDE_CODE: "DEFAULT-CODE"
+      run: |
+        pip install fastapi uvicorn pydantic pydantic-settings structlog pytest pytest-cov pytest-asyncio httpx google-genai anyio
+        pytest

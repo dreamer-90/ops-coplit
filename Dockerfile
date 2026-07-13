@@ -1,26 +1,32 @@
-# Build stage
-FROM python:3.13-slim AS builder
+# Stage 1: Build the frontend with Node.js and Vite
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
+# Stage 2: Install Python dependencies
+FROM python:3.11-slim AS backend-builder
 WORKDIR /app
-
-# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --target=/app/deps -r requirements.txt
 
-# Runtime stage
-FROM python:3.13-slim
-
+# Stage 3: Final runtime environment
+FROM python:3.11-slim
 WORKDIR /app
 
-# Copy dependencies from builder
-COPY --from=builder /app/deps /app/deps
+# Copy Python dependencies
+COPY --from=backend-builder /app/deps /app/deps
 ENV PYTHONPATH=/app/deps
 
-# Copy application code
+# Copy Python backend code
 COPY app/ ./app/
-COPY frontend/ ./frontend/
 
-# Expose port (Cloud Run uses PORT env var)
+# Copy the built Vite frontend assets
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Expose port
 ENV PORT=8080
 EXPOSE 8080
 
