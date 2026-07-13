@@ -13,22 +13,22 @@ Key design decisions:
 
 from __future__ import annotations
 
-import os
 import json
 import logging
+import os
 from datetime import datetime, timezone
 
 from google import genai
 from google.genai import types
 
 from app.config import settings
-from app.context import get_full_context, LANGUAGE_POOL
+from app.context import LANGUAGE_POOL, get_full_context
 from app.schemas import (
     CrowdEvent,
     DecisionHistory,
+    EmergencyState,
     EngineDecision,
     StaffAllocation,
-    EmergencyState,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,9 @@ client = None
 if api_key:
     client = genai.Client(api_key=api_key)
 else:
-    logger.warning("No GEMINI_API_KEY set. The engine will fallback to static simulated decisions.")
+    logger.warning(
+        "No GEMINI_API_KEY set. The engine will fallback to static simulated decisions."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -131,9 +133,13 @@ DECISION_SCHEMA = types.Schema(
         "decision_provenance": types.Schema(
             type=types.Type.OBJECT,
             properties={
-                "based_on": types.Schema(type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING)),
-                "missing": types.Schema(type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING))
-            }
+                "based_on": types.Schema(
+                    type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING)
+                ),
+                "missing": types.Schema(
+                    type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING)
+                ),
+            },
         ),
         "alternatives": types.Schema(
             type=types.Type.ARRAY,
@@ -162,9 +168,7 @@ DECISION_SCHEMA = types.Schema(
                 if lang != "en"
             },
         ),
-        "conflict_resolution": types.Schema(
-            type=types.Type.STRING, nullable=True
-        ),
+        "conflict_resolution": types.Schema(type=types.Type.STRING, nullable=True),
         "priority": types.Schema(type=types.Type.INTEGER),
     },
 )
@@ -244,7 +248,7 @@ async def process_event(
 
         user_prompt = _build_user_prompt(event, history, emergency_state)
 
-        response = client.models.generate_content(
+        response = await client.aio.models.generate_content(
             model=settings.model_name,
             contents=user_prompt,
             config=types.GenerateContentConfig(
@@ -277,15 +281,17 @@ async def process_event(
             timestamp=datetime.now(timezone.utc).isoformat(),
             risk_level=data.get("risk_level", "moderate"),
             affected_zones=data.get("affected_zones", [event.zone_id]),
-            recommended_action=data.get(
-                "recommended_action", "Monitor situation"
-            ),
+            recommended_action=data.get("recommended_action", "Monitor situation"),
             reasoning=data.get("reasoning", "Automated assessment."),
-            mission_objective=data.get("mission_objective", "Maintain nominal operations"),
+            mission_objective=data.get(
+                "mission_objective", "Maintain nominal operations"
+            ),
             expected_outcome=data.get("expected_outcome", "Situation stabilized"),
             predicted_effects=data.get("predicted_effects", {}),
             confidence_score=data.get("confidence_score", 85.0),
-            decision_provenance=data.get("decision_provenance", {"based_on": ["sensors"], "missing": []}),
+            decision_provenance=data.get(
+                "decision_provenance", {"based_on": ["sensors"], "missing": []}
+            ),
             alternatives=data.get("alternatives", []),
             staff_allocation=staff_allocs,
             alert_text_en=data.get("alert_text_en", "No alert required."),
@@ -322,10 +328,12 @@ _SEVERITY_TO_PRIORITY = {
 }
 
 
-def _fallback_decision(event: CrowdEvent, emergency_state: EmergencyState = None) -> EngineDecision:
+def _fallback_decision(
+    event: CrowdEvent, emergency_state: EmergencyState = None
+) -> EngineDecision:
     """Safe default if LLM fails or no API key is provided."""
     risk = _SEVERITY_TO_RISK.get(event.severity, "moderate")
-    
+
     if emergency_state and emergency_state.current_level > 0:
         return EngineDecision(
             event_id=event.event_id,
@@ -384,7 +392,10 @@ def _fallback_decision(event: CrowdEvent, emergency_state: EmergencyState = None
         expected_outcome="Fallback static response applied",
         predicted_effects={"Unknown": "Simulation unavailable"},
         confidence_score=50.0,
-        decision_provenance={"based_on": ["Turnstile count", "Flow rate"], "missing": ["AI Context"]},
+        decision_provenance={
+            "based_on": ["Turnstile count", "Flow rate"],
+            "missing": ["AI Context"],
+        },
         alternatives=["Do nothing", "Dispatch secondary team"],
         staff_allocation=[],
         alert_text_en=alert,

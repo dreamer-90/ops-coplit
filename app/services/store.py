@@ -1,9 +1,9 @@
-import json
-from typing import List, Optional, Protocol
-from datetime import datetime, timezone
+from typing import List, Protocol
+
 import redis.asyncio as redis
 
-from app.schemas import EngineDecision, EmergencyState, AuditLogRecord
+from app.schemas import AuditLogRecord, EmergencyState, EngineDecision
+
 
 class StateStore(Protocol):
     async def add_decision(self, decision: EngineDecision) -> None: ...
@@ -13,10 +13,13 @@ class StateStore(Protocol):
     async def get_emergency_state(self) -> EmergencyState: ...
     async def set_emergency_state(self, state: EmergencyState) -> None: ...
     async def clear_all(self) -> None: ...
-    
+
     # Pub/Sub methods
     async def publish(self, channel: str, message: str) -> None: ...
-    async def subscribe(self, channel: str): ... # Returns an async iterator/generator yielding messages
+    async def subscribe(
+        self, channel: str
+    ): ...  # Returns an async iterator/generator yielding messages
+
 
 class InMemoryStateStore:
     def __init__(self):
@@ -53,18 +56,18 @@ class InMemoryStateStore:
         self._emergency_state = EmergencyState()
 
     async def publish(self, channel: str, message: str) -> None:
-        import asyncio
         if channel in self._subscribers:
             for queue in self._subscribers[channel]:
                 await queue.put(message)
 
     async def subscribe(self, channel: str):
         import asyncio
+
         if channel not in self._subscribers:
             self._subscribers[channel] = []
         queue = asyncio.Queue()
         self._subscribers[channel].append(queue)
-        
+
         try:
             while True:
                 msg = await queue.get()

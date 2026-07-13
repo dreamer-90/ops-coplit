@@ -1,6 +1,8 @@
 import asyncio
 import logging
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+
 from app.services.dependencies import get_store
 
 logger = logging.getLogger(__name__)
@@ -9,12 +11,15 @@ router = APIRouter()
 
 connected_clients: list[WebSocket] = []
 
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     """Real-time decision push via WebSocket."""
     await websocket.accept()
     connected_clients.append(websocket)
-    logger.info("WebSocket client connected (%d total in this worker)", len(connected_clients))
+    logger.info(
+        "WebSocket client connected (%d total in this worker)", len(connected_clients)
+    )
     try:
         while True:
             # Keep connection alive
@@ -25,6 +30,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             "WebSocket client disconnected (%d remaining in this worker)",
             len(connected_clients),
         )
+
 
 async def pubsub_listener():
     """Background task to listen to Redis PubSub and fan-out to local websockets."""

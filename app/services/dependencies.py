@@ -1,10 +1,12 @@
-import os
 import logging
-from app.services.store import StateStore, InMemoryStateStore, RedisStateStore
+import os
+
+from app.services.store import InMemoryStateStore, RedisStateStore, StateStore
 
 logger = logging.getLogger(__name__)
 
 _store_instance: StateStore = None
+
 
 async def init_store() -> None:
     global _store_instance
@@ -23,13 +25,16 @@ async def init_store() -> None:
                 logger.error("Failed to connect to Redis in PRODUCTION. Failing fast.")
                 raise e
             else:
-                logger.warning(f"Failed to connect to Redis in {env}. Falling back to InMemoryStore. Error: {e}")
+                logger.warning(
+                    f"Failed to connect to Redis in {env}. Falling back to InMemoryStore. Error: {e}"
+                )
                 _store_instance = InMemoryStateStore()
     else:
         if env == "production":
             raise RuntimeError("REDIS_URL is required in production environment.")
         logger.info("No REDIS_URL provided. Using InMemoryStateStore.")
         _store_instance = InMemoryStateStore()
+
 
 def get_store() -> StateStore:
     if _store_instance is None:

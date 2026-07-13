@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Zone definitions
 # ---------------------------------------------------------------------------
@@ -167,7 +166,9 @@ def get_full_context() -> str:
     lines.append("")
     lines.append("## Staff Roster")
     for role, info in STAFF_ROSTER.items():
-        lines.append(f"- {role}: {info['total']} total, default allocation: {info['default_allocation']}")
+        lines.append(
+            f"- {role}: {info['total']} total, default allocation: {info['default_allocation']}"
+        )
 
     lines.append("")
     lines.append(f"## Supported Languages: {', '.join(LANGUAGE_POOL)}")

@@ -7,50 +7,69 @@ ensuring the AI engine's output is always structurally correct.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Optional
-
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+
 class GraphNode(BaseModel):
     """Represents a topological location in the stadium exterior/interior graph."""
+
     node_id: str
-    node_type: str = Field(description="Transit | Security | Plaza | Gate | Concourse | Stand")
+    node_type: str = Field(
+        description="Transit | Security | Plaza | Gate | Concourse | Stand"
+    )
     connected_to: List[str] = Field(default_factory=list)
     capacity: int
     current_occupancy: int = 0
 
+
 class EmergencyState(BaseModel):
     """Server-authoritative state object governing the emergency control plane."""
-    current_level: int = Field(0, description="0: Nominal, 1: Freeze AI, 2: Lock Sector, 3: Full Emergency, 4: Evacuate")
+
+    current_level: int = Field(
+        0,
+        description="0: Nominal, 1: Freeze AI, 2: Lock Sector, 3: Full Emergency, 4: Evacuate",
+    )
     current_commander: Optional[str] = None
     active_incident: Optional[str] = None
     activated_at: Optional[str] = None
     recovery_eta: Optional[str] = None
     affected_zones: List[str] = Field(default_factory=list)
 
+
 class AuditLogRecord(BaseModel):
     """Immutable ledger entry for operational actions."""
+
     event_id: str
-    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     operator_id: str
     action: str
     previous_state: int
     new_state: int
     reason: str
 
+
 class ScramRequest(BaseModel):
     """Payload for initiating a SCRAM."""
+
     level: int = Field(..., ge=1, le=4)
     operator_id: str = Field(..., description="ID of the operator initiating SCRAM")
-    override_code: Optional[str] = Field(None, description="Manager override code required for Level 3+")
+    override_code: Optional[str] = Field(
+        None, description="Manager override code required for Level 3+"
+    )
+
 
 class DispatchRequest(BaseModel):
     """Payload for manual dispatch, evaluated against minimum reserve limits."""
+
     zone: str
     roles: List[str]
-    remaining_reserve: int = Field(..., description="The calculated reserve left after this dispatch")
+    remaining_reserve: int = Field(
+        ..., description="The calculated reserve left after this dispatch"
+    )
 
 
 class CrowdEvent(BaseModel):
@@ -74,10 +93,15 @@ class CrowdEvent(BaseModel):
     severity: str = Field(
         ..., description="Severity level: low | medium | high | critical"
     )
-    predicted_density_percent: Optional[float] = Field(None, description="Forecasted peak density")
-    time_to_critical_minutes: Optional[int] = Field(None, description="Minutes until critical density is reached")
-    queue_growth_rate: Optional[str] = Field(None, description="Rate of queue growth (e.g., '+42/min')")
-
+    predicted_density_percent: Optional[float] = Field(
+        None, description="Forecasted peak density"
+    )
+    time_to_critical_minutes: Optional[int] = Field(
+        None, description="Minutes until critical density is reached"
+    )
+    queue_growth_rate: Optional[str] = Field(
+        None, description="Rate of queue growth (e.g., '+42/min')"
+    )
 
 
 class StaffAllocation(BaseModel):
@@ -109,7 +133,7 @@ class EngineDecision(BaseModel):
     )
     decision_provenance: dict[str, list[str]] = Field(
         default_factory=dict,
-        description="Tracks used data sources and missing feeds. e.g. {'based_on': ['CCTV'], 'missing': ['Transit']}"
+        description="Tracks used data sources and missing feeds. e.g. {'based_on': ['CCTV'], 'missing': ['Transit']}",
     )
     alternatives: Optional[list[str]] = Field(
         None, description="Alternative actions that were considered but rejected"
@@ -122,10 +146,12 @@ class EngineDecision(BaseModel):
         description="1-2 sentence explanation of WHY this action was chosen",
     )
     mission_objective: str = Field(
-        ..., description="The primary operational objective this decision supports (e.g. 'Preserve life', 'Prevent crowd reversal')"
+        ...,
+        description="The primary operational objective this decision supports (e.g. 'Preserve life', 'Prevent crowd reversal')",
     )
     expected_outcome: str = Field(
-        ..., description="The predicted state after execution (e.g. 'Density drops below 6/m²')"
+        ...,
+        description="The predicted state after execution (e.g. 'Density drops below 6/m²')",
     )
     predicted_effects: dict[str, str] = Field(
         default_factory=dict,
@@ -213,9 +239,7 @@ class DecisionHistory:
             for a in d.staff_allocation:
                 # Decrement source
                 state.setdefault(a.from_zone, {})
-                state[a.from_zone][a.role] = (
-                    state[a.from_zone].get(a.role, 0) - a.count
-                )
+                state[a.from_zone][a.role] = state[a.from_zone].get(a.role, 0) - a.count
                 # Increment target
                 state.setdefault(a.to_zone, {})
                 state[a.to_zone][a.role] = state[a.to_zone].get(a.role, 0) + a.count
@@ -224,12 +248,15 @@ class DecisionHistory:
 
 class ActionRequest(BaseModel):
     """Payload for manual quick actions (e.g. Open Gates)."""
+
     action_type: str = Field(..., description="Action identifier")
     zone_id: Optional[str] = None
     operator_id: str
 
+
 class BroadcastRequest(BaseModel):
     """Payload for manual PA broadcasts."""
+
     message: str
     zones: list[str]
     operator_id: str

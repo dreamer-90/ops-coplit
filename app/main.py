@@ -17,8 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.routers import data, emergency, operations, simulation, websocket
 from app.services.dependencies import init_store
-from app.api.routers import simulation, emergency, data, websocket, operations
 from app.simulator import get_event_count
 
 logger = logging.getLogger(__name__)
@@ -34,19 +34,20 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 # Lifespan
 # ---------------------------------------------------------------------------
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup/shutdown lifecycle hook."""
     logger.info("Stadium Ops Copilot starting — %d events loaded", get_event_count())
-    
+
     # Initialize the state store (Redis or InMemory)
     await init_store()
-    
+
     # Start the background Pub/Sub listener for WebSockets
     pubsub_task = asyncio.create_task(websocket.pubsub_listener())
-    
+
     yield
-    
+
     # Shutdown
     pubsub_task.cancel()
     try:
@@ -71,22 +72,29 @@ app = FastAPI(
 )
 
 import os
+
 from fastapi import Request
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000").split(","),
+    allow_origins=os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000",
+    ).split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains"
+    )
     return response
 
 
@@ -111,11 +119,13 @@ app.include_router(operations.router)
 # Static file serving (frontend)
 # ---------------------------------------------------------------------------
 
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def serve_frontend() -> HTMLResponse:
     """Serve the main dashboard HTML."""
     index_path = FRONTEND_DIR / "index.html"
     return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
+
 
 # Mount static assets (CSS, JS) — placed AFTER explicit routes
 app.mount(
