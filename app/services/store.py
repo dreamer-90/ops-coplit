@@ -27,12 +27,16 @@ class InMemoryStateStore:
 
     async def add_decision(self, decision: EngineDecision) -> None:
         self._decisions.append(decision)
+        if len(self._decisions) > 100:
+            self._decisions = self._decisions[-100:]
 
     async def get_decisions(self) -> List[EngineDecision]:
         return list(self._decisions)
 
     async def add_audit_log(self, record: AuditLogRecord) -> None:
         self._audit_logs.append(record)
+        if len(self._audit_logs) > 100:
+            self._audit_logs = self._audit_logs[-100:]
 
     async def get_audit_logs(self) -> List[AuditLogRecord]:
         return list(self._audit_logs)

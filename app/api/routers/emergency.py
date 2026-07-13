@@ -5,9 +5,21 @@ from app.services.operations import activate_scram_business_logic, recover_scram
 
 router = APIRouter(prefix="/api/emergency", tags=["emergency"])
 
+import time
+from fastapi import HTTPException
+
+_scram_last_called = 0.0
+SCRAM_RATE_LIMIT_SECONDS = 3.0
+
 @router.post("/scram", dependencies=[Depends(verify_token)])
 async def activate_scram(req: ScramRequest) -> dict:
     """Activate SCRAM override."""
+    global _scram_last_called
+    now = time.time()
+    if now - _scram_last_called < SCRAM_RATE_LIMIT_SECONDS:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait before triggering SCRAM again.")
+    _scram_last_called = now
+    
     return {"status": "ok", "state": await activate_scram_business_logic(req)}
 
 @router.post("/recover", dependencies=[Depends(verify_token)])

@@ -70,13 +70,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+import os
+from fastapi import Request
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost", "http://localhost:8000", "http://127.0.0.1", "http://127.0.0.1:8000"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 
 @app.get("/api/health", tags=["system"])
