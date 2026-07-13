@@ -3,6 +3,8 @@ services:
     name: stadium-ops-copilot
     env: docker
     envVars:
+      - key: ENV
+        value: preview
       - key: SCRAM_OVERRIDE_CODE
         value: ALPHA-77
       - key: API_SECRET_KEY
