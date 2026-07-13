@@ -2,8 +2,8 @@
 
 **Live Demo (Frontend Simulation Mode):** [https://dreamer-90.github.io/ops-coplit/](https://dreamer-90.github.io/ops-coplit/)
 
-## 🎥 Video Walkthrough
-> **Action Required:** [UPLOAD_YOUR_VIDEO_HERE_OR_LINK_TO_YOUTUBE]
+## 📸 Dashboard Preview
+![Stadium Ops Copilot Dashboard](demo_screenshot.png)
 
 ## Overview
 Stadium Ops Copilot is a smart, dynamic AI assistant built for the high-stakes environment of large-scale event operations. It monitors crowd dynamics, detects bottlenecks, and dynamically triggers resource dispatches to maintain safety and efficiency.
